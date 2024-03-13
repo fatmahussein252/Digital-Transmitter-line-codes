@@ -1,3 +1,7 @@
+%% Clearing workspace
+clear all;
+close all;
+
 A=4;
 ensemble=zeros(500,700);
 st_mean=zeros(1,700);
