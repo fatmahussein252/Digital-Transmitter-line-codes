@@ -39,7 +39,7 @@ end
 
 % Description:
 %   Calculate the time mean of line code signals across different realizations
-%   It computes the mean value of each time step across all realizations and plots the result.
+%   It computes the mean value of each realization across time and plots the result.
 %   The resulting plot is titled with the provided string 'str'.
 function time_mean(ensemble, str, num_samples, num_realizations, ylim_start, ylim_end)
 
