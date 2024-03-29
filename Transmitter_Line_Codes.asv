@@ -85,7 +85,7 @@ function time_mean(ensemble, str, num_samples, num_realizations, ylim_start, yli
     end
 
 % Description:
-%   This function computes the mean of a vector
+%   This function compute
     function m=MEAN(data,num_realizations)
         sum=0;
         for i=1:num_realizations
@@ -93,10 +93,7 @@ function time_mean(ensemble, str, num_samples, num_realizations, ylim_start, yli
         end
         m=sum/num_realizations;
     end
-% Description:
-%   Calculate the statistical Autocorrelation of line code signals across different realizations
-%   The resulting plot is titled with the provided string 'str'.
-    function  statistical_autocorrelation(ensemble, str, num_samples, num_realizations)
+    function  statistical_autocorrelation(ensemble, str, num_samples, num_realizations, ylim_start, ylim_end)
         
         % Pre-allocate the autocorrelation matrix
         Rx = zeros(num_samples, num_samples);
@@ -108,21 +105,19 @@ function time_mean(ensemble, str, num_samples, num_realizations, ylim_start, yli
                 
             end
         end
-        Rx = [fliplr(Rx) Rx];%flip the matrix and concatenate , as Rx is even function
-        Rx = cat(2,Rx(1,1:num_samples-1),Rx(1,num_samples+1:2*num_samples));%remove Rx(0) as it repeated twice
+        Rx = [fliplr(mean(Rx)) mean(Rx)];%flip the matrix and concatenate , as Rx is even function
+        Rx = cat(2,Rx(1,1:699),Rx(1,701:1400));%remove Rx(0) as it repeated twice
         time = -699:699;
         subplot(2,1,1);
         plot(time*10,Rx);
-        axis([-num_samples num_samples -3 20])
+        axis([-700 700 -3 20])
         title(str);
         ylabel('magnitude');
         xlabel('tau');
     end
 
-% Description:
-%   Calculate the time Autocorrelation of line code signals across different realizations
-%   The resulting plot is titled with the provided string 'str'.
-    function time_autocorrelation(ensemble, str, num_samples, num_realizations)
+
+    function time_autocorrelation(ensemble, str, num_samples, num_realizations, ylim_start, ylim_end)
         
           % Pre-allocate the autocorrelation matrix
         Rx = zeros(num_realizations, num_realizations);
@@ -134,7 +129,7 @@ function time_mean(ensemble, str, num_samples, num_realizations, ylim_start, yli
                 
             end
         end
-        Rx = [fliplr(Rx) Rx];%flip the matrix and concatenate , as Rx is even function
+        Rx = [fliplr(mean(Rx)) mean(Rx)];%flip the matrix and concatenate , as Rx is even function
         Rx = cat(2,Rx(1,1:499),Rx(1,501:1000));%remove Rx(0) as it repeated twice
         time = -499:499;
         subplot(2,1,2);
@@ -179,8 +174,8 @@ function time_mean(ensemble, str, num_samples, num_realizations, ylim_start, yli
         time_mean(ensemble, ("time mean - polar NRZ line code"), num_samples, num_realizations, ylim_start, ylim_end);
         
         %%%% calculate the statistical and time Autocorrelation of polar NRZ
-        statistical_autocorrelation(ensemble, ("statistical Autocorrelation - polar NRZ line code"), num_samples, num_realizations)
-        time_autocorrelation(ensemble, ("time Autocorrelation - polar NRZ line code"), num_samples, num_realizations);
+        statistical_autocorrelation(ensemble, ("statistical Autocorrelation - polar NRZ line code"), num_samples, num_realizations, ylim_start, ylim_end)
+        time_autocorrelation(ensemble, ("time Autocorrelation - polar NRZ line code"), num_samples, num_realizations, ylim_start, ylim_end)
         %%%% Generation of Unipolar line code %%%
         ensemble = generate_line_code(Data, "unipolar", A, ensemble, num_realizations);
         
@@ -190,9 +185,7 @@ function time_mean(ensemble, str, num_samples, num_realizations, ylim_start, yli
         %%%% calculate statistical and time means of Unipolar line code %%%
         statistical_mean(ensemble, ("statistical mean - Unipolar line code"), num_samples, num_realizations, ylim_start, ylim_end);
         time_mean(ensemble, ("time mean - Unipolar line code"), num_samples, num_realizations, ylim_start, ylim_end);
-        %%%% calculate the statistical and time Autocorrelation of Unipolar
-        statistical_autocorrelation(ensemble, ("statistical Autocorrelation - Unipolar line code"), num_samples, num_realizations)
-        time_autocorrelation(ensemble, ("time Autocorrelation - Unipolar line code"), num_samples, num_realizations);
+        
         %%%% Generation of polar RZ line code %%%
         ensemble = generate_line_code(Data, "polarRZ", A, ensemble, num_realizations);
         
@@ -202,9 +195,5 @@ function time_mean(ensemble, str, num_samples, num_realizations, ylim_start, yli
         %%%% calculate statistical and time means of polar RZ line code %%%
         statistical_mean(ensemble, ("statistical mean - polar RZ line code"), num_samples, num_realizations, ylim_start, ylim_end);
         time_mean(ensemble, ("time mean - polar RZ line code"), num_samples, num_realizations, ylim_start, ylim_end);
-        
-         %%%% calculate the statistical and time Autocorrelation of polar RZ
-        statistical_autocorrelation(ensemble, ("statistical Autocorrelation - polar RZ line code"), num_samples, num_realizations)
-        time_autocorrelation(ensemble, ("time Autocorrelation - polar RZ line code"), num_samples, num_realizations);
         
     end
