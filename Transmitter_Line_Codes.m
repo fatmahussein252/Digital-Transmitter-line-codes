@@ -111,6 +111,7 @@ function time_mean(ensemble, str, num_samples, num_realizations, ylim_start, yli
         Rx = [fliplr(Rx) Rx];%flip the matrix and concatenate , as Rx is even function
         Rx = cat(2,Rx(1,1:num_samples-1),Rx(1,num_samples+1:2*num_samples));%remove Rx(0) as it repeated twice
         time = -699:699;
+        figure;
         subplot(2,1,1);
         plot(time,Rx);
         axis([-num_samples num_samples -3 20])
