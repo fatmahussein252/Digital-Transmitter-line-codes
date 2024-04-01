@@ -106,6 +106,26 @@ for m=1:num_samples
     for n=m:num_samples
         Rx(m,n-m+1)=MEAN(ensemble(:,m).*ensemble(:,n),num_realizations);
         
+<<<<<<< HEAD
+=======
+        % Loop through each realization
+        for m=1:num_samples
+            for n=m:num_samples
+                Rx(m,n-m+1)=MEAN(ensemble(:,m).*ensemble(:,n),num_realizations);
+                
+            end
+        end
+        Rx = [fliplr(Rx) Rx];%flip the matrix and concatenate , as Rx is even function
+        Rx = cat(2,Rx(1,1:num_samples-1),Rx(1,num_samples+1:2*num_samples));%remove Rx(0) as it repeated twice
+        time = -699:699;
+        figure;
+        subplot(2,1,1);
+        plot(time,Rx);
+        axis([-num_samples num_samples -3 20])
+        title(str);
+        ylabel('magnitude');
+        xlabel('tau');
+>>>>>>> 90ce90f9159c2a2306904b03dea4aea8934e2ce5
     end
 end
 Rx = [fliplr(Rx) Rx];%flip the matrix and concatenate , as Rx is even function
