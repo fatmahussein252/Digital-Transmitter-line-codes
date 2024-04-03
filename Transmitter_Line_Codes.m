@@ -12,8 +12,9 @@ function plot_line_codes(ensemble, str, ylim_start, ylim_end)
 figure;
 
 for i = 1:4
+  
     subplot(4, 1, i);
-    plot(ensemble(i, :));
+    ensemble(i, :)=stairs(ensemble(i, :));
     title(str, num2str(i));
     ylim([ylim_start ylim_end]);
 end
@@ -96,7 +97,7 @@ end
 % Description:
 %   Calculate the statistical Autocorrelation of line code signals across different realizations
 %   The resulting plot is titled with the provided string 'str'.
-function  statistical_autocorrelation(ensemble, str, num_samples, num_realizations)
+function  statistical_autocorrelation(ensemble, str, num_samples, num_realizations,PSD_str)
 
 % Pre-allocate the autocorrelation matrix
 Rx = zeros(num_samples, num_samples);
@@ -109,6 +110,10 @@ for m=1:num_samples
 end
         Rx = [fliplr(Rx) Rx];%flip the matrix and concatenate , as Rx is even function
         Rx = cat(2,Rx(1,1:num_samples-1),Rx(1,num_samples+1:2*num_samples));%remove Rx(0) as it repeated twice
+     
+        %%%% calculate and plot the PSD of each line code %%%
+        PSD(Rx,PSD_str);
+        %%% plot ACF %%%
         time = -699:699;
         figure;
         subplot(2,1,1);
@@ -155,17 +160,19 @@ end
 %   This function calulates and plots the PSD of the first realization of each line
 %   code signal.
 %   The resulting plot is titled with the provided string 'str'.
-function PSD(realization_1,str,num_samples)
-signal_spectrum = fft(realization_1);
-spectrum_L = length(signal_spectrum);
-%% Adjust the Axis scale so the signal spectrum is
-%% plotted versus frequency centered at zero.
-k = -spectrum_L/2:spectrum_L/2-1;
-figure;
-plot (k,fftshift(abs(signal_spectrum)));
-title(str);
-xlabel('Frequency (Hz)');
-ylabel('Magnitude');
+function PSD(Rx,str)
+    fs=100;
+    N=1024;
+    signal_spectrum = fft(Rx,N);
+    %% Adjust the Axis scale so the signal spectrum is
+    %% plotted versus frequency centered at zero.
+    k = -N/2:N/2-1;
+    shifted_spectrum=fftshift(abs(signal_spectrum));
+    figure;
+    plot(k*fs/N,shifted_spectrum);
+    title(str);
+    xlabel('Frequency (Hz)');
+    ylabel('Magnitude');
 end
 % Description:
 %   Entry point for executing the main functionality of the MATLAB script.
@@ -190,8 +197,7 @@ ylim_end = 5;
 
 %%%% Generation of polar NRZ line code %%%
 ensemble = generate_line_code(Data, "polarNRZ", A, ensemble, num_realizations);
-%%%% calculate and plot the PSD of the first realization of polar NRZ line code %%%
-PSD(ensemble(1,:),("PSD of the first realization of polar NRZ line code"),num_samples);
+
 %%%% plot 4 realizations of polar NRZ line code %%%
 plot_line_codes(ensemble, ('polar NRZ line code realisation '), ylim_start, ylim_end);
 
@@ -200,15 +206,12 @@ statistical_mean(ensemble, ("statistical mean - polar NRZ line code"), num_sampl
 time_mean(ensemble, ("time mean - polar NRZ line code"), num_samples, num_realizations, ylim_start, ylim_end);
 
 %%%% calculate the statistical and time Autocorrelation of polar NRZ
-statistical_autocorrelation(ensemble, ("statistical Autocorrelation - polar NRZ line code"), num_samples, num_realizations)
+statistical_autocorrelation(ensemble, ("statistical Autocorrelation - polar NRZ line code"), num_samples, num_realizations,("PSD of polar NRZ line code"))
 time_autocorrelation(ensemble, ("time Autocorrelation - polar NRZ line code"), num_samples,num_realizations);
 
 
 %%%% Generation of Unipolar line code %%%
 ensemble = generate_line_code(Data, "unipolar", A, ensemble, num_realizations);
-
-%%%% calculate and plot the PSD of the first realization of polar NRZ line code %%%
-PSD(ensemble(1,:),("PSD of the first realization of unipolar line code"),num_samples);
 
 %%%% plot 4 realizations of Unipolar line code %%%
 plot_line_codes(ensemble, ('Unipolar line code realisation '), ylim_start, ylim_end);
@@ -217,14 +220,11 @@ plot_line_codes(ensemble, ('Unipolar line code realisation '), ylim_start, ylim_
 statistical_mean(ensemble, ("statistical mean - Unipolar line code"), num_samples, num_realizations, ylim_start, ylim_end);
 time_mean(ensemble, ("time mean - Unipolar line code"), num_samples, num_realizations, ylim_start, ylim_end);
 %%%% calculate the statistical and time Autocorrelation of Unipolar
-statistical_autocorrelation(ensemble, ("statistical Autocorrelation - Unipolar line code"), num_samples, num_realizations)
+statistical_autocorrelation(ensemble, ("statistical Autocorrelation - Unipolar line code"), num_samples, num_realizations,("PSD of unipolar line code"))
 time_autocorrelation(ensemble, ("time Autocorrelation - Unipolar line code"), num_samples,num_realizations);
 
 %%%% Generation of polar RZ line code %%%
 ensemble = generate_line_code(Data, "polarRZ", A, ensemble, num_realizations);
-
-%%%% calculate and plot the PSD of the first realization of polar NRZ line code %%%
-PSD(ensemble(1,:),("PSD of the first realization of polarRZ line code "),num_samples);
 
 %%%% plot 4 realizations of polar RZ line code %%%
 plot_line_codes(ensemble, ('polar RZ line code realisation '), ylim_start, ylim_end);
@@ -234,7 +234,7 @@ statistical_mean(ensemble, ("statistical mean - polar RZ line code"), num_sample
 time_mean(ensemble, ("time mean - polar RZ line code"), num_samples, num_realizations, ylim_start, ylim_end);
 
 %%%% calculate the statistical and time Autocorrelation of polar RZ
-statistical_autocorrelation(ensemble, ("statistical Autocorrelation - polar RZ line code"), num_samples, num_realizations)
+statistical_autocorrelation(ensemble, ("statistical Autocorrelation - polar RZ line code"), num_samples, num_realizations,("PSD of polar RZ line code"))
 time_autocorrelation(ensemble, ("time Autocorrelation - polar RZ line code"), num_samples,num_realizations);
 
 end
