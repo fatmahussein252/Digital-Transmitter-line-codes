@@ -64,27 +64,47 @@ end
 %   ensemble: Matrix containing generated line code signals (size: num_realizations x num_samples).
 function ensemble = generate_line_code(Data, code_type, A, ensemble, num_realizations)
 
-num_samples_per_bit = 7; % Number of samples per bit
-for i = 1:num_realizations
-    if strcmp(code_type, 'unipolar')
-        Tx = A * Data(i, :);
-    else
-        Tx = ((2 * Data(i, :)) - 1) * A;
+    num_samples_per_bit = 7; % Number of samples per bit
+    for i = 1:num_realizations
+        if strcmp(code_type, 'unipolar')
+            Tx = A * Data(i, :);
+        else
+            Tx = ((2 * Data(i, :)) - 1) * A;
+        end
+        
+        Tx2 = repmat(Tx, num_samples_per_bit, 1);
+        if strcmp(code_type, 'polarRZ')
+            zero_duration_start = 5;
+            zero_duration_end = 7;
+            Tx2(zero_duration_start:zero_duration_end,:) = 0;
+        end
+        
+        Tx_out = reshape(Tx2, size(Tx2, 1) * size(Tx2, 2), 1);
+        start_index_no_shift = 1;
+        ensemble(i, :) = Tx_out(start_index_no_shift:(size(Tx_out)) - (num_samples_per_bit - start_index_no_shift) - 1);;
+    end
     end
     
-    Tx2 = repmat(Tx, num_samples_per_bit, 1);
-    if strcmp(code_type, 'polarRZ')
-        zero_duration_start = 5;
-        zero_duration_end = 7;
-        Tx2(zero_duration_start:zero_duration_end,:) = 0;
+    % Description:
+    %   This function applies a random time shift to a given ensemble of signals.
+    % Output Argument:
+    %   shifted_ensemble: Ensemble of signals with applied time shift.
+    function shifted_ensemble = apply_time_shift(ensemble, num_samples_per_bit)
+        shifted_ensemble = zeros(size(ensemble));
+        for i = 1:size(ensemble, 1)
+            start_index = randi([1 num_samples_per_bit], 1, 1);
+            shifted_signal = ensemble(i,:);
+            shifted_signal = shifted_signal(start_index:end);
+            
+            % checking whether the length of the shifted signal is less than the number of samples in each realization of the ensemble
+            if length(shifted_signal) < size(ensemble, 2)
+                shifted_signal = [shifted_signal zeros(1, size(ensemble, 2) - length(shifted_signal))];
+            end
+            shifted_ensemble(i,:) = shifted_signal;
+        end
     end
-    Tx_out = reshape(Tx2, size(Tx2, 1) * size(Tx2, 2), 1);
-    start_index = randi([1 num_samples_per_bit], 1, 1);
-    Delayed_Tx = Tx_out(start_index:(size(Tx_out)) - (num_samples_per_bit - start_index) - 1);
-    ensemble(i, :) = Delayed_Tx;
-end
-end
-
+    
+    
 % Description:
 %   This function computes the mean of a vector
 function m=MEAN(data,N)
@@ -184,7 +204,7 @@ A = 4;
 num_realizations = 500;
 num_samples = 700;
 num_bits = 101; % Number of bits in each data instance
-
+num_samples_per_bit = 7;    
 % Initialize arrays
 ensemble = zeros(num_realizations, num_samples);
 statistical_mean_array = zeros(1, num_samples);
@@ -201,6 +221,13 @@ ensemble = generate_line_code(Data, "polarNRZ", A, ensemble, num_realizations);
 %%%% plot 4 realizations of polar NRZ line code %%%
 plot_line_codes(ensemble, ('polar NRZ line code realisation '), ylim_start, ylim_end);
 
+%%%% Apply time shift %%%
+ensemble = apply_time_shift(ensemble, num_samples_per_bit);
+
+%%%% Plotting after applying time shift %%%
+plot_line_codes(ensemble, ('polar NRZ after applying time shift'), ylim_start, ylim_end);
+
+
 %%%% calculate statistical and time means of polar NRZ line code %%%
 statistical_mean(ensemble, ("statistical mean - polar NRZ line code"), num_samples, num_realizations, ylim_start, ylim_end);
 time_mean(ensemble, ("time mean - polar NRZ line code"), num_samples, num_realizations, ylim_start, ylim_end);
@@ -216,6 +243,13 @@ ensemble = generate_line_code(Data, "unipolar", A, ensemble, num_realizations);
 %%%% plot 4 realizations of Unipolar line code %%%
 plot_line_codes(ensemble, ('Unipolar line code realisation '), ylim_start, ylim_end);
 
+%%%% Apply time shift %%%
+ensemble = apply_time_shift(ensemble, num_samples_per_bit);
+
+%%%% Plotting after applying time shift %%%
+plot_line_codes(ensemble, ('Unipolar after applying time shift'), ylim_start, ylim_end);
+
+
 %%%% calculate statistical and time means of Unipolar line code %%%
 statistical_mean(ensemble, ("statistical mean - Unipolar line code"), num_samples, num_realizations, ylim_start, ylim_end);
 time_mean(ensemble, ("time mean - Unipolar line code"), num_samples, num_realizations, ylim_start, ylim_end);
@@ -228,6 +262,13 @@ ensemble = generate_line_code(Data, "polarRZ", A, ensemble, num_realizations);
 
 %%%% plot 4 realizations of polar RZ line code %%%
 plot_line_codes(ensemble, ('polar RZ line code realisation '), ylim_start, ylim_end);
+
+%%%% Apply time shift %%%
+ensemble = apply_time_shift(ensemble, num_samples_per_bit);
+
+%%%% Plotting after applying time shift %%%
+plot_line_codes(ensemble, ('polar RZ after applying time shift'), ylim_start, ylim_end);
+
 
 %%%% calculate statistical and time means of polar RZ line code %%%
 statistical_mean(ensemble, ("statistical mean - polar RZ line code"), num_samples, num_realizations, ylim_start, ylim_end);
