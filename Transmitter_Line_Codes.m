@@ -157,7 +157,7 @@ xlabel('tau');
 end
 
 % Description:
-%   This function calulates and plots the PSD of the first realization of each line
+%   This function calulates and plots the PSD of the each line
 %   code signal.
 %   The resulting plot is titled with the provided string 'str'.
 function PSD(Rx,str)
