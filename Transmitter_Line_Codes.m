@@ -14,7 +14,7 @@ figure;
 for i = 1:4
   
     subplot(4, 1, i);
-    ensemble(i, :)=stairs(ensemble(i, :));
+    ensemble(i, :)=stairs(ensemble(i, 1:700));
     title(str, num2str(i));
     ylim([ylim_start ylim_end]);
 end
@@ -62,8 +62,8 @@ end
 %   It supports three types of line codes: polarNRZ, unipolar and polarRZ. For unipolar encoding,
 % Output Argument:
 %   ensemble: Matrix containing generated line code signals (size: num_realizations x num_samples).
-function ensemble = generate_line_code(Data, code_type, A, ensemble, num_realizations)
-
+function ensemble_before_shift = generate_line_code(Data, code_type, A, num_realizations,num_samples)
+    ensemble_before_shift=zeros(num_realizations,num_samples+7);
     num_samples_per_bit = 7; % Number of samples per bit
     for i = 1:num_realizations
         if strcmp(code_type, 'unipolar')
@@ -80,8 +80,7 @@ function ensemble = generate_line_code(Data, code_type, A, ensemble, num_realiza
         end
         
         Tx_out = reshape(Tx2, size(Tx2, 1) * size(Tx2, 2), 1);
-        start_index_no_shift = 1;
-        ensemble(i, :) = Tx_out(start_index_no_shift:(size(Tx_out)) - (num_samples_per_bit - start_index_no_shift) - 1);;
+        ensemble_before_shift(i, :) = Tx_out;
     end
     end
     
@@ -89,17 +88,12 @@ function ensemble = generate_line_code(Data, code_type, A, ensemble, num_realiza
     %   This function applies a random time shift to a given ensemble of signals.
     % Output Argument:
     %   shifted_ensemble: Ensemble of signals with applied time shift.
-    function shifted_ensemble = apply_time_shift(ensemble, num_samples_per_bit)
-        shifted_ensemble = zeros(size(ensemble));
+    function shifted_ensemble = apply_time_shift(ensemble, num_samples_per_bit, num_realizations, num_samples)
+        shifted_ensemble = zeros(num_realizations, num_samples);
         for i = 1:size(ensemble, 1)
             start_index = randi([1 num_samples_per_bit], 1, 1);
             shifted_signal = ensemble(i,:);
-            shifted_signal = shifted_signal(start_index:end);
-            
-            % checking whether the length of the shifted signal is less than the number of samples in each realization of the ensemble
-            if length(shifted_signal) < size(ensemble, 2)
-                shifted_signal = [shifted_signal zeros(1, size(ensemble, 2) - length(shifted_signal))];
-            end
+            shifted_signal = shifted_signal(start_index:length(shifted_signal) - (num_samples_per_bit - start_index) - 1);
             shifted_ensemble(i,:) = shifted_signal;
         end
     end
@@ -216,13 +210,13 @@ ylim_start = -5;
 ylim_end = 5;
 
 %%%% Generation of polar NRZ line code %%%
-ensemble = generate_line_code(Data, "polarNRZ", A, ensemble, num_realizations);
+ensemble_before_shift = generate_line_code(Data, "polarNRZ", A, num_realizations, num_samples);
 
 %%%% plot 4 realizations of polar NRZ line code %%%
-plot_line_codes(ensemble, ('polar NRZ line code realisation '), ylim_start, ylim_end);
+plot_line_codes(ensemble_before_shift, ('polar NRZ line code realisation '), ylim_start, ylim_end);
 
 %%%% Apply time shift %%%
-ensemble = apply_time_shift(ensemble, num_samples_per_bit);
+ensemble = apply_time_shift(ensemble_before_shift, num_samples_per_bit, num_realizations, num_samples);
 
 %%%% Plotting after applying time shift %%%
 plot_line_codes(ensemble, ('polar NRZ after applying time shift'), ylim_start, ylim_end);
@@ -238,13 +232,13 @@ time_autocorrelation(ensemble, ("time Autocorrelation - polar NRZ line code"), n
 
 
 %%%% Generation of Unipolar line code %%%
-ensemble = generate_line_code(Data, "unipolar", A, ensemble, num_realizations);
+ensemble_before_shift = generate_line_code(Data, "unipolar", A, num_realizations, num_samples);
 
 %%%% plot 4 realizations of Unipolar line code %%%
-plot_line_codes(ensemble, ('Unipolar line code realisation '), ylim_start, ylim_end);
+plot_line_codes(ensemble_before_shift, ('Unipolar line code realisation '), ylim_start, ylim_end);
 
 %%%% Apply time shift %%%
-ensemble = apply_time_shift(ensemble, num_samples_per_bit);
+ensemble = apply_time_shift(ensemble_before_shift, num_samples_per_bit, num_realizations, num_samples);
 
 %%%% Plotting after applying time shift %%%
 plot_line_codes(ensemble, ('Unipolar after applying time shift'), ylim_start, ylim_end);
@@ -258,13 +252,13 @@ statistical_autocorrelation(ensemble, ("statistical Autocorrelation - Unipolar l
 time_autocorrelation(ensemble, ("time Autocorrelation - Unipolar line code"), num_samples,num_realizations);
 
 %%%% Generation of polar RZ line code %%%
-ensemble = generate_line_code(Data, "polarRZ", A, ensemble, num_realizations);
+ensemble_before_shift = generate_line_code(Data, "polarRZ", A, num_realizations, num_samples);
 
 %%%% plot 4 realizations of polar RZ line code %%%
-plot_line_codes(ensemble, ('polar RZ line code realisation '), ylim_start, ylim_end);
+plot_line_codes(ensemble_before_shift, ('polar RZ line code realisation '), ylim_start, ylim_end);
 
 %%%% Apply time shift %%%
-ensemble = apply_time_shift(ensemble, num_samples_per_bit);
+ensemble = apply_time_shift(ensemble_before_shift, num_samples_per_bit, num_realizations, num_samples);
 
 %%%% Plotting after applying time shift %%%
 plot_line_codes(ensemble, ('polar RZ after applying time shift'), ylim_start, ylim_end);
