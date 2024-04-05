@@ -200,9 +200,6 @@ num_samples = 700;
 num_bits = 101; % Number of bits in each data instance
 num_samples_per_bit = 7;    
 % Initialize arrays
-ensemble = zeros(num_realizations, num_samples);
-statistical_mean_array = zeros(1, num_samples);
-time_mean_array = zeros(1, num_realizations);
 Data = randi([0 1], num_realizations, num_bits);
 
 %plots configurations
